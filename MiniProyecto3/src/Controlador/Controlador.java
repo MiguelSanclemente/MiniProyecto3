@@ -7,18 +7,18 @@ public class Controlador {
     private Interfaz vista;
     private Entrenador entrenador1;
     private Entrenador entrenador2;
-    private Batalla batalla;
     private int indice1 = 0, indice2 = 0;
 
     public Controlador(Interfaz vista) {
         this.vista = vista;
-        this.batalla = new Batalla();
     }
 
     // Método para recibir los entrenadores desde la vista
     public void setEntrenadores(Entrenador entrenador1, Entrenador entrenador2) {
         this.entrenador1 = entrenador1;
         this.entrenador2 = entrenador2;
+        this.indice1 = 0;
+        this.indice2 = 0;
     }
 
     // Método para iniciar la batalla (puedes expandirlo según tu lógica)
@@ -77,8 +77,6 @@ public class Controlador {
                 segundo.getNamePokemon() + " tiene " + segundo.getHP() + " HP restantes."
             );
         }
-
-        // Puedes llamar a vista.actualizarPaneles(pokemon1, pokemon2) si implementas ese método
     }
 
     private Ataque buscarAtaquePorNombre(Pokemon pokemon, String nombreAtaque) {

@@ -1,6 +1,4 @@
-package pokemon.ataque;
-
-import pokemon.Pokemon;
+package Modelo;
 
 public class Ataque {
     private String nameAtaque;
@@ -13,19 +11,7 @@ public class Ataque {
         this.power = power;
     }
 
-    enum TipoAtaque {
-        FISICO, ESPECIAL;
-    };
-
-    public String getNameAtaque() {
-        return nameAtaque;
-    }
-
-    public Pokemon.TipoAtaque getTipoAtaque() {
-        return tipoAtaque;
-    }
-
-    public byte getPower() {
-        return power;
-    }
+    public String getNameAtaque() { return nameAtaque; }
+    public Pokemon.TipoAtaque getTipoAtaque() { return tipoAtaque; }
+    public byte getPower() { return power; }
 }
