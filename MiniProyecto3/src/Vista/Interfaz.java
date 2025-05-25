@@ -1,10 +1,13 @@
-package Interfaz;
-
-import entrenador.Entrenador;
-import pokemon.Pokemon;
-import pokemon.element.ElementPokemon;
+package Vista;
 
 import javax.swing.*;
+
+import Controlador.Controlador;
+import Modelo.Ataque;
+import Modelo.ElementPokemon;
+import Modelo.Entrenador;
+import Modelo.Pokemon;
+
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,9 +15,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import pokemon.ataque.Ataque;
 
 public class Interfaz extends JFrame {
+    private Controlador controlador;
     private JTextField entrenador1Field;
     private JTextField entrenador2Field;
     private JTextArea textArea;
@@ -104,9 +107,13 @@ public class Interfaz extends JFrame {
 
         entrenador1 = new Entrenador();
         entrenador2 = new Entrenador();
-
         entrenador1.setNameTrainer(new Scanner(nombreEntrenador1), availablePokemons);
         entrenador2.setNameTrainer(new Scanner(nombreEntrenador2), availablePokemons);
+
+        // Notifica al controlador
+        if (controlador != null) {
+            controlador.setEntrenadores(entrenador1, entrenador2);
+        }
 
         // Mostrar la pantalla con los equipos generados
         mostrarEquipos();
@@ -140,7 +147,11 @@ public class Interfaz extends JFrame {
 
         // Botón para continuar
         JButton continuarButton = new JButton("Continuar");
-        continuarButton.addActionListener(e -> iniciarBatalla());
+        continuarButton.addActionListener(e -> {
+            if (controlador != null) {
+                controlador.iniciarBatalla();
+            }
+        });
         add(continuarButton, BorderLayout.SOUTH);
 
         // Actualizar la ventana
@@ -180,10 +191,7 @@ public class Interfaz extends JFrame {
 
         continuarButton = new JButton("Continuar");
         continuarButton.setEnabled(false); // Deshabilitado hasta que ambos seleccionen habilidades
-        continuarButton.addActionListener(e -> {
-            ejecutarTurno(pokemon1, pokemon2);
-            continuarButton.setEnabled(false); // Deshabilitar nuevamente hasta la próxima selección
-        });
+        continuarButton.addActionListener(e -> notificarTurnoSeleccionado());
         add(continuarButton, BorderLayout.SOUTH);
 
         revalidate();
@@ -231,155 +239,29 @@ public class Interfaz extends JFrame {
         continuarButton.setEnabled(entrenador1Selecciono && entrenador2Selecciono);
     }
 
-    private void ejecutarTurno(Pokemon pokemon1, Pokemon pokemon2) {
-        // Obtener las habilidades seleccionadas
-        String habilidad1 = grupoHabilidades1.getSelection().getActionCommand();
-        String habilidad2 = grupoHabilidades2.getSelection().getActionCommand();
-
-        Ataque ataque1 = obtenerAtaquePorNombre(pokemon1, habilidad1);
-        Ataque ataque2 = obtenerAtaquePorNombre(pokemon2, habilidad2);
-
-        // Determinar el orden de ataque según la velocidad de las habilidades
-        int velocidad1 = ataque1.getPower(); // Usamos la potencia como velocidad de la habilidad
-        int velocidad2 = ataque2.getPower();
-
-        Pokemon primero = velocidad1 >= velocidad2 ? pokemon1 : pokemon2;
-        Pokemon segundo = primero == pokemon1 ? pokemon2 : pokemon1;
-        Ataque ataquePrimero = primero == pokemon1 ? ataque1 : ataque2;
-        Ataque ataqueSegundo = primero == pokemon1 ? ataque2 : ataque1;
-
-        // Calcular el daño del primer ataque
-        int dañoPrimero = ataquePrimero.getPower();
-        if (primero.getTypePokemon().isStrongAgainst(segundo.getTypePokemon())) {
-            dañoPrimero += dañoPrimero * 0.3; // Aumentar el daño en un 30% por ventaja de tipo
-            JOptionPane.showMessageDialog(this, "¡Ventaja de tipo! El ataque de " + primero.getNamePokemon() + " es más efectivo.");
-        }
-
-        // Mostrar el ataque del primer Pokémon
-        JOptionPane.showMessageDialog(this, primero.getNamePokemon() + " usa " + ataquePrimero.getNameAtaque() + " y ataca primero.");
-        segundo.setHP((short) (segundo.getHP() - dañoPrimero)); // Reducir HP del segundo Pokémon
-
-        // Verificar si el segundo Pokémon ha sido derrotado
-        if (segundo.getHP() <= 0) {
-            JOptionPane.showMessageDialog(this, segundo.getNamePokemon() + " ha sido derrotado.");
-            avanzarAlSiguientePokemon(segundo);
-            return; // Terminar el turno si el segundo Pokémon es derrotado
-        }
-
-        // Calcular el daño del segundo ataque
-        int dañoSegundo = ataqueSegundo.getPower();
-        if (segundo.getTypePokemon().isStrongAgainst(primero.getTypePokemon())) {
-            dañoSegundo += dañoSegundo * 0.3; // Aumentar el daño en un 30% por ventaja de tipo
-            JOptionPane.showMessageDialog(this, "¡Ventaja de tipo! El ataque de " + segundo.getNamePokemon() + " es más efectivo.");
-        }
-
-        // Mostrar el ataque del segundo Pokémon
-        JOptionPane.showMessageDialog(this, segundo.getNamePokemon() + " usa " + ataqueSegundo.getNameAtaque() + ".");
-        primero.setHP((short) (primero.getHP() - dañoSegundo)); // Reducir HP del primer Pokémon
-
-        // Verificar si el primer Pokémon ha sido derrotado
-        if (primero.getHP() <= 0) {
-            JOptionPane.showMessageDialog(this, primero.getNamePokemon() + " ha sido derrotado.");
-            avanzarAlSiguientePokemon(primero);
-        } else {
-            // Mostrar el estado de ambos Pokémon
-            JOptionPane.showMessageDialog(this,
-                primero.getNamePokemon() + " tiene " + primero.getHP() + " HP restantes.\n" +
-                segundo.getNamePokemon() + " tiene " + segundo.getHP() + " HP restantes."
-            );
-        }
-
-        // Actualizar la ventana
-        revalidate();
-        repaint();
-    }
-
-    private Ataque obtenerAtaquePorNombre(Pokemon pokemon, String nombreAtaque) {
-        for (Ataque ataque : pokemon.getAtaque()) {
-            if (ataque.getNameAtaque().equals(nombreAtaque)) {
-                return ataque;
-            }
-        }
-        throw new IllegalArgumentException("Ataque no encontrado: " + nombreAtaque);
-    }
-
-    private void avanzarAlSiguientePokemon(Pokemon pokemonDerrotado) {
-        if (pokemonDerrotado == entrenador1.getEquipo()[0]) {
-            entrenador1.getEquipo()[0] = obtenerSiguientePokemon(entrenador1);
-        } else {
-            entrenador2.getEquipo()[0] = obtenerSiguientePokemon(entrenador2);
-        }
-
-        // Verificar si el juego ha terminado
-        if (entrenador1.getEquipo()[0] == null || entrenador2.getEquipo()[0] == null) {
-            String ganador = (entrenador1.getEquipo()[0] == null) ? entrenador2.getNombre() : entrenador1.getNombre();
-            JOptionPane.showMessageDialog(this, "¡" + ganador + " ha ganado la batalla!");
-            System.exit(0); // Cerrar el programa
-        } else {
-            // Reiniciar la ventana con los Pokémon actualizados
-            reiniciarVentana();
+    // Llama al controlador cuando ambos ataques están seleccionados
+    private void notificarTurnoSeleccionado() {
+        if (controlador != null && grupoHabilidades1.getSelection() != null && grupoHabilidades2.getSelection() != null) {
+            String ataque1 = grupoHabilidades1.getSelection().getActionCommand();
+            String ataque2 = grupoHabilidades2.getSelection().getActionCommand();
+            controlador.ejecutarTurno(ataque1, ataque2);
+            continuarButton.setEnabled(false); // Deshabilitar hasta la próxima selección
         }
     }
 
-    private Pokemon obtenerSiguientePokemon(Entrenador entrenador) {
-        for (Pokemon pokemon : entrenador.getEquipo()) {
-            if (pokemon.getHP() > 0) {
-                return pokemon;
-            }
-        }
-        JOptionPane.showMessageDialog(this, entrenador.getNombre() + " se ha quedado sin Pokémon. ¡El juego ha terminado!");
-        return null; // Devuelve null si no quedan Pokémon
+    // Métodos para que el controlador actualice la interfaz
+    public void mostrarMensaje(String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje);
     }
 
-    private void actualizarPanelPokemon(String nombreEntrenador, Pokemon pokemon, ButtonGroup grupoHabilidades) {
-        // Limpiar el grupo de botones
-        grupoHabilidades.clearSelection();
-
-        // Crear un nuevo panel para el Pokémon
-        JPanel panel = crearPanelPokemon(nombreEntrenador, pokemon, grupoHabilidades);
-
-        // Reemplazar el panel existente en la interfaz
-        if (grupoHabilidades == grupoHabilidades1) {
-            getContentPane().remove(1); // Eliminar el panel del primer Pokémon
-            add(panel, BorderLayout.WEST);
-        } else {
-            getContentPane().remove(2); // Eliminar el panel del segundo Pokémon
-            add(panel, BorderLayout.EAST);
-        }
-
-        // Actualizar la ventana
-        revalidate();
-        repaint();
+    public void actualizarPaneles(Pokemon pokemon1, Pokemon pokemon2) {
+        // Aquí puedes actualizar los paneles de los Pokémon en la interfaz
+        // ...
     }
 
-    private void eliminarPanelPokemon(ButtonGroup grupoHabilidades) {
-        if (grupoHabilidades == grupoHabilidades1) {
-            getContentPane().remove(1); // Eliminar el panel del primer Pokémon
-        } else {
-            getContentPane().remove(2); // Eliminar el panel del segundo Pokémon
-        }
-
-        // Actualizar la ventana
-        revalidate();
-        repaint();
-    }
-
-    private void reiniciarVentana() {
-        // Cerrar la ventana actual
-        dispose();
-
-        // Crear una nueva instancia de la ventana
-        Interfaz nuevaVentana = new Interfaz();
-        nuevaVentana.setEntrenadores(entrenador1, entrenador2); // Pasar los entrenadores actuales
-        nuevaVentana.setVisible(true);
-    }
-
-    public void setEntrenadores(Entrenador entrenador1, Entrenador entrenador2) {
-        this.entrenador1 = entrenador1;
-        this.entrenador2 = entrenador2;
-
-        // Reiniciar la batalla con los Pokémon actualizados
-        iniciarBatalla();
+    public void finalizarBatalla(String ganador) {
+        JOptionPane.showMessageDialog(this, "¡" + ganador + " ha ganado la batalla!");
+        System.exit(0);
     }
 
     public static void main(String[] args) {
