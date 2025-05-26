@@ -1,6 +1,5 @@
 package Modelo;
 
-import java.util.Scanner;
 
 public class ElementPokemon {
     private static Ataque[] fireMoves, waterMoves, grassMoves, groundMoves, electricMoves;

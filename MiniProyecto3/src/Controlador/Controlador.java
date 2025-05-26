@@ -23,8 +23,8 @@ public class Controlador {
 
     // Método para iniciar la batalla (puedes expandirlo según tu lógica)
     public void iniciarBatalla() {
-        // Llama a un método de la vista para mostrar la pantalla de batalla
-        vista.iniciarBatalla();
+       
+     
     }
 
     // Recibe los nombres de los ataques seleccionados
@@ -103,5 +103,21 @@ public class Controlador {
             // Reinicia la batalla con los nuevos Pokémon activos
             vista.iniciarBatalla();
         }
+    }
+
+    public Entrenador getEntrenador1() {
+        return entrenador1;
+    }
+
+    public Entrenador getEntrenador2() {
+        return entrenador2;
+    }
+
+    public int getIndice1() {
+        return indice1;
+    }
+
+    public int getIndice2() {
+        return indice2;
     }
 }

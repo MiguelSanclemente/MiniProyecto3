@@ -11,9 +11,7 @@ import Modelo.Pokemon;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
 
 public class Interfaz extends JFrame {
@@ -21,8 +19,6 @@ public class Interfaz extends JFrame {
     private JTextField entrenador1Field;
     private JTextField entrenador2Field;
     private JTextArea textArea;
-    private Entrenador entrenador1;
-    private Entrenador entrenador2;
 
     private ButtonGroup grupoHabilidades1;
     private ButtonGroup grupoHabilidades2;
@@ -105,17 +101,15 @@ public class Interfaz extends JFrame {
         ElementPokemon.initializeData();
         List<Pokemon> availablePokemons = new ArrayList<>(Arrays.asList(ElementPokemon.getPokemon()));
 
-        entrenador1 = new Entrenador();
-        entrenador2 = new Entrenador();
+        Entrenador entrenador1 = new Entrenador();
+        Entrenador entrenador2 = new Entrenador();
         entrenador1.setNameTrainer(new Scanner(nombreEntrenador1), availablePokemons);
         entrenador2.setNameTrainer(new Scanner(nombreEntrenador2), availablePokemons);
 
-        // Notifica al controlador
         if (controlador != null) {
             controlador.setEntrenadores(entrenador1, entrenador2);
         }
 
-        // Mostrar la pantalla con los equipos generados
         mostrarEquipos();
     }
 
@@ -135,6 +129,9 @@ public class Interfaz extends JFrame {
         JScrollPane scrollPane = new JScrollPane(textArea);
         add(scrollPane, BorderLayout.CENTER);
 
+        Entrenador entrenador1 = controlador.getEntrenador1();
+        Entrenador entrenador2 = controlador.getEntrenador2();
+
         // Mostrar los equipos
         textArea.append(entrenador1.getNombre() + ":\n");
         for (Pokemon p : entrenador1.getEquipo()) {
@@ -146,7 +143,7 @@ public class Interfaz extends JFrame {
         }
 
         // Botón para continuar
-        JButton continuarButton = new JButton("Continuar");
+        continuarButton = new JButton("Continuar");
         continuarButton.addActionListener(e -> {
             if (controlador != null) {
                 controlador.iniciarBatalla();
@@ -159,7 +156,7 @@ public class Interfaz extends JFrame {
         repaint();
     }
 
-    private void iniciarBatalla() {
+    public void iniciarBatalla() {
         // Limpiar el contenido de la ventana
         getContentPane().removeAll();
         setLayout(new BorderLayout());
@@ -173,17 +170,27 @@ public class Interfaz extends JFrame {
         JPanel panelCentral = new JPanel();
         panelCentral.setLayout(new GridLayout(2, 1, 10, 10));
 
-        // Usar los ButtonGroup globales
+        Entrenador entrenador1 = controlador.getEntrenador1();
+        Entrenador entrenador2 = controlador.getEntrenador2();
+
+        int idx1 = controlador.getIndice1();
+        int idx2 = controlador.getIndice2();
+
+        // Validar índices y existencia de Pokémon antes de mostrar paneles
+        Pokemon pokemon1 = (idx1 < entrenador1.getEquipo().length) ? entrenador1.getEquipo()[idx1] : null;
+        Pokemon pokemon2 = (idx2 < entrenador2.getEquipo().length) ? entrenador2.getEquipo()[idx2] : null;
+
+        if (pokemon1 == null || pokemon2 == null) {
+            // No mostrar paneles, la batalla terminó o hay un error
+            return;
+        }
+
         grupoHabilidades1 = new ButtonGroup();
         grupoHabilidades2 = new ButtonGroup();
 
-        // Primer Pokémon del entrenador 1
-        Pokemon pokemon1 = entrenador1.getEquipo()[0];
         JPanel panelPokemon1 = crearPanelPokemon(entrenador1.getNombre(), pokemon1, grupoHabilidades1);
         panelCentral.add(panelPokemon1);
 
-        // Primer Pokémon del entrenador 2
-        Pokemon pokemon2 = entrenador2.getEquipo()[0];
         JPanel panelPokemon2 = crearPanelPokemon(entrenador2.getNombre(), pokemon2, grupoHabilidades2);
         panelCentral.add(panelPokemon2);
 
@@ -231,12 +238,15 @@ public class Interfaz extends JFrame {
     }
 
     private void verificarSeleccionHabilidades() {
-        // Verificar si ambos grupos de habilidades tienen una selección
         boolean entrenador1Selecciono = grupoHabilidades1.getSelection() != null;
         boolean entrenador2Selecciono = grupoHabilidades2.getSelection() != null;
 
-        // Habilitar el botón "Continuar" si ambos seleccionaron
-        continuarButton.setEnabled(entrenador1Selecciono && entrenador2Selecciono);
+        // Busca el botón "Continuar" en el contenedor y habilítalo
+        for (Component comp : getContentPane().getComponents()) {
+            if (comp instanceof JButton && ((JButton) comp).getText().equals("Continuar")) {
+                comp.setEnabled(entrenador1Selecciono && entrenador2Selecciono);
+            }
+        }
     }
 
     // Llama al controlador cuando ambos ataques están seleccionados
@@ -264,12 +274,10 @@ public class Interfaz extends JFrame {
         System.exit(0);
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            Interfaz interfaz = new Interfaz();
-            interfaz.setVisible(true);
-        });
+    public void setControlador(Controlador controlador) {
+        this.controlador = controlador;
     }
+
 }
 
 

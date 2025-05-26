@@ -1,5 +1,7 @@
 package Modelo;
 import java.util.Scanner;
+import javax.swing.JButton;
+
 
 public class Batalla {
 
@@ -82,6 +84,7 @@ public class Batalla {
     }
 
     private void mostrarEquipos(String nombreEntrenador1, Pokemon[] equipo1, String nombreEntrenador2, Pokemon[] equipo2) {
+        
         System.out.println("\nEquipos iniciales:");
         System.out.println(nombreEntrenador1 + ":");
         for (Pokemon p : equipo1) {
