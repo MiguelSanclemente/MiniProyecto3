@@ -1,6 +1,4 @@
-package Batalla;
-import pokemon.Pokemon;
-import pokemon.ataque.Ataque;
+package Modelo;
 import java.util.Scanner;
 
 public class Batalla {
