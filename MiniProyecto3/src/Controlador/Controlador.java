@@ -23,7 +23,7 @@ public class Controlador {
 
     // Método para iniciar la batalla (puedes expandirlo según tu lógica)
     public void iniciarBatalla() {
-       
+        vista.iniciarBatalla();
      
     }
 
