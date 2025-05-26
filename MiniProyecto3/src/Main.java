@@ -1,13 +1,15 @@
-
-import Interfaz.Interfaz;
-
+import Vista.Interfaz;
+import Controlador.Controlador;
 
 public class Main {
     public static void main(String[] args) {
-        // Iniciar la interfaz gráfica
         javax.swing.SwingUtilities.invokeLater(() -> {
             Interfaz interfaz = new Interfaz();
+            Controlador controlador = new Controlador(interfaz);
+            interfaz.setControlador(controlador);
             interfaz.setVisible(true);
         });
     }
 }
+
+
